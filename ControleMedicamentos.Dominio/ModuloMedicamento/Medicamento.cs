@@ -43,5 +43,18 @@ namespace ControleMedicamentos.Dominio.ModuloMedicamento
 
 
         }
+
+        public bool possuiEstoque(int quantidadeRequisitada)
+        {
+
+            if(QuantidadeDisponivel < quantidadeRequisitada)
+                return false;
+
+            QuantidadeDisponivel -= quantidadeRequisitada;
+            return true;
+        }
+
+
+
     }
 }

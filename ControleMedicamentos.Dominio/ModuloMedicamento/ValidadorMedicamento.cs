@@ -30,7 +30,9 @@ namespace ControleMedicamentos.Dominio.ModuloMedicamento
 
             RuleFor(x => x.QuantidadeDisponivel)
                 .NotNull().WithMessage("O campo quantidade não pode ficar vazio")
-                .NotEmpty().WithMessage("O campo quantidade não pode ficar vazio");
+                .NotEmpty().WithMessage("O campo quantidade não pode ficar vazio")
+                .GreaterThan(-1).WithMessage("Não é possível ter quantidade negativa");
+
         }
     }
 }

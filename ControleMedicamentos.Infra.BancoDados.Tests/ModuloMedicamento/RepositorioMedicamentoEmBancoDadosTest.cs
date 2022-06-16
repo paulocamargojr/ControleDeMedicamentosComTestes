@@ -137,5 +137,36 @@ namespace ControleMedicamentos.Infra.BancoDados.Tests.ModuloMedicamento
             Assert.AreEqual("Dipirona", medicamentoEncontrado.Nome);
 
         }
+
+        [TestMethod]
+        public void Deve_selecionar_todos_Medicamento()
+        {
+
+            Fornecedor fornecedor = new Fornecedor("Paulo", "123456789", "paulo@fornecedor.com", "Lages", "SC");
+
+            var repositorioFornecedor = new RepositorioFornecedorEmBancoDeDados();
+
+            repositorioFornecedor.Inserir(fornecedor);
+
+            Medicamento medicamento = new Medicamento("Dipirona", "Remédio para dor de cabeça", "500f", DateTime.Now.Date, 100, fornecedor);
+
+            Medicamento medicamento2 = new Medicamento("Dipirona2", "Remédio para dor de cabeça2", "500f2", DateTime.Now.Date, 2100, fornecedor);
+
+            var repositorio = new RepositorioMedicamentoEmBancoDados();
+
+            repositorio.Inserir(medicamento);
+            repositorio.Inserir(medicamento2);
+
+            var medicamentos = repositorio.SelecionarTodos();
+
+            Assert.AreEqual(2, medicamentos.Count);
+
+            Assert.AreEqual("Dipirona", medicamentos[0].Nome);
+            Assert.AreEqual("500f", medicamentos[0].Lote);
+            Assert.AreEqual("Dipirona2", medicamentos[1].Nome);
+            Assert.AreEqual("500f2", medicamentos[1].Lote);
+
+        }
+
     }
 }

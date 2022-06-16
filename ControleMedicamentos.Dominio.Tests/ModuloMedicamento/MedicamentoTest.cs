@@ -49,5 +49,20 @@ namespace ControleMedicamentos.Dominio.Tests.ModuloMedicamento
 
             Assert.AreEqual("O campo Lote não pode ficar vazio", resultadoValidacao.Errors[0].ErrorMessage);
         }
+
+        [TestMethod]
+        public void Deve_validar_Quantidade()
+        {
+            Fornecedor fornecedor = new Fornecedor("Paulo", "123456789", "Paulo@fornecedor.com", "Lages", "SC");
+
+            Medicamento medicamento = new Medicamento("Dipirona", "Remédio para dor de cabeça", "500f", DateTime.Now.Date, -1, fornecedor);
+
+            ValidadorMedicamento validador = new ValidadorMedicamento();
+
+            var resultadoValidacao = validador.Validate(medicamento);
+
+            Assert.AreEqual("Não é possível ter quantidade negativa", resultadoValidacao.Errors[0].ErrorMessage);
+        }
+
     }
 }
