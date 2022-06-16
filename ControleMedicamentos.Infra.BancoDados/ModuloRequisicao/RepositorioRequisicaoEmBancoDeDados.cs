@@ -6,9 +6,6 @@ using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ControleMedicamentos.Infra.BancoDados.ModuloRequisicao
 {
@@ -35,7 +32,7 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloRequisicao
                    (
                         @MEDICAMENTO_ID,
                         @PACIENTE_ID,
-                        @QTDMEDICAMENTO,
+                        @QUANTIDADEMEDICAMENTO,
                         @DATA,
                         @FUNCIONARIO_ID
                     ); 
@@ -44,11 +41,11 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloRequisicao
         private const string sqlEditar =
             @"UPDATE [TBREQUISICAO]	
 		        SET
-                    [MEDICAMENTO] = @MEDICAMENTO,
-                    [PACIENTE] = @PACIENTE,
-                    [QTDMEDICAMENTO] = @QTDMEDICAMENTO,
+                    [MEDICAMENTO_ID] = @MEDICAMENTO_ID,
+                    [PACIENTE_ID] = @PACIENTE_ID,
+                    [QUANTIDADEMEDICAMENTO] = @QUANTIDADEMEDICAMENTO,
                     [DATA] = @DATA,
-                    [FUNCIONARIO] = @FUNCIONARIO 
+                    [FUNCIONARIO_ID] = @FUNCIONARIO_ID
 		        WHERE
 			        [ID] = @ID";
 
@@ -60,22 +57,23 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloRequisicao
         private const string sqlSelecionarPorNumero =
             @"SELECT 
                     R.ID,
-                    R.QTDMEDICAMENTO,
+                    R.QuantidadeMedicamento,
                     R.DATA,
 
                     M.NOME AS NOME_MEDICAMENTO,
                     M.ID AS ID_MEDICAMENTO,
                     P.NOME AS NOME_PACIENTE,
                     P.ID AS ID_PACIENTE,
-                    F.NOME AS NOME_FUCIONARIO,
-                    F.ID AS ID_FUCIONARIO
+                    F.NOME AS NOME_FUNCIONARIO,
+                    F.ID AS ID_FUNCIONARIO
                     
-	            FROM 
-		            TBREQUISICAO AS R INNER JOIN TBMEDICAMENTO AS M ON
+                    
+	            FROM TBREQUISICAO AS R
+		             INNER JOIN TBMEDICAMENTO AS M ON
 	            R.MEDICAMENTO_ID = M.ID
-                    TBREQUISICAO AS R INNER JOIN TBPACIENTE AS P ON 
+                     INNER JOIN TBPACIENTE AS P ON 
                 R.PACIENTE_ID = P.ID
-                    TBREQUISICAO AS R INNER JOIN TBFUNCIOARIO AS F ON
+                     INNER JOIN TBFUNCIONARIO AS F ON
                 R.FUNCIONARIO_ID = F.ID
 
 		        WHERE
@@ -93,15 +91,15 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloRequisicao
                     M.ID AS ID_MEDICAMENTO,
                     P.NOME AS NOME_PACIENTE,
                     P.ID AS ID_PACIENTE,
-                    F.NOME AS NOME_FUCIONARIO,
-                    F.ID AS ID_FUCIONARIO
+                    F.NOME AS NOME_FUNCIONARIO,
+                    F.ID AS ID_FUNCIONARIO
                     
 	            FROM 
 		            TBREQUISICAO AS R INNER JOIN TBMEDICAMENTO AS M ON
 	            R.MEDICAMENTO_ID = M.ID
                     TBREQUISICAO AS R INNER JOIN TBPACIENTE AS P ON 
                 R.PACIENTE_ID = P.ID
-                    TBREQUISICAO AS R INNER JOIN TBFUNCIOARIO AS F ON
+                    TBREQUISICAO AS R INNER JOIN TBFUNCIONARIO AS F ON
                 R.FUNCIONARIO_ID = F.ID";
 
         #endregion
@@ -130,9 +128,27 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloRequisicao
 
         }
 
-        public ValidationResult Excluir(Requisicao registro)
+        public ValidationResult Excluir(Requisicao requisicao)
         {
-            throw new NotImplementedException();
+
+            SqlConnection conexaoComBanco = new SqlConnection(enderecoBanco);
+
+            SqlCommand comandoExclusao = new SqlCommand(sqlExcluir, conexaoComBanco);
+
+            comandoExclusao.Parameters.AddWithValue("ID", requisicao.Id);
+
+            conexaoComBanco.Open();
+            int numeroRegistrosExcluidos = comandoExclusao.ExecuteNonQuery();
+
+            var resultadoValidacao = new ValidationResult();
+
+            if (numeroRegistrosExcluidos == 0)
+                resultadoValidacao.Errors.Add(new ValidationFailure("", "Não foi possível remover o registro"));
+
+            conexaoComBanco.Close();
+
+            return resultadoValidacao;
+
         }
 
         public ValidationResult Inserir(Requisicao requisicao)
@@ -213,7 +229,7 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloRequisicao
             comandoInsercao.Parameters.AddWithValue("ID", requisicao.Id);
             comandoInsercao.Parameters.AddWithValue("MEDICAMENTO_ID", requisicao.Medicamento.Id);
             comandoInsercao.Parameters.AddWithValue("PACIENTE_ID", requisicao.Paciente.Id);
-            comandoInsercao.Parameters.AddWithValue("QTDMEDICAMENTO", requisicao.QtdMedicamento);
+            comandoInsercao.Parameters.AddWithValue("QuantidadeMedicamento", requisicao.QtdMedicamento);
             comandoInsercao.Parameters.AddWithValue("DATA", requisicao.Data);
             comandoInsercao.Parameters.AddWithValue("FUNCIONARIO_ID", requisicao.Funcionario.Id);
         }
@@ -221,20 +237,20 @@ namespace ControleMedicamentos.Infra.BancoDados.ModuloRequisicao
         private Requisicao ConverterParaRequisicao(SqlDataReader leitorRequisicao)
         {
             int id = Convert.ToInt32(leitorRequisicao["ID"]);
-            int qtdMedicamento = Convert.ToInt32(leitorRequisicao["QTDMEDICAMENTO"]);
+            int qtdMedicamento = Convert.ToInt32(leitorRequisicao["QuantidadeMedicamento"]);
             DateTime data = Convert.ToDateTime(leitorRequisicao["DATA"]);
-            int idPaciente = Convert.ToInt32(leitorRequisicao["PACIENTE_ID"]);
+            int idPaciente = Convert.ToInt32(leitorRequisicao["ID_PACIENTE"]);
             string nomePaciente = Convert.ToString(leitorRequisicao["NOME_PACIENTE"]);
-            int idMedicamento = Convert.ToInt32(leitorRequisicao["MEDICAMENTO_ID"]);
+            int idMedicamento = Convert.ToInt32(leitorRequisicao["ID_MEDICAMENTO"]);
             string nomeMedicamento = Convert.ToString(leitorRequisicao["NOME_MEDICAMENTO"]);
-            int idFuncionario = Convert.ToInt32(leitorRequisicao["FUNCIONARIO_ID"]);
+            int idFuncionario = Convert.ToInt32(leitorRequisicao["ID_FUNCIONARIO"]);
             string nomeFuncionario = Convert.ToString(leitorRequisicao["NOME_FUNCIONARIO"]);
 
 
             var requisicao = new Requisicao
             {
                 Id = id,
-                QtdMedicamento = id,
+                QtdMedicamento = qtdMedicamento,
                 Data = data,
                 Paciente = new Paciente
                 {

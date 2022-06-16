@@ -28,7 +28,7 @@ namespace ControleMedicamentos.Dominio.ModuloRequisicao
             RuleFor(x => x.QtdMedicamento)
                 .NotNull().WithMessage("O Campo quantidade não pode ficar vazio")
                 .NotEmpty().WithMessage("O campo quantidade não pode ficar vazio");
-                //.LessThan(1).WithMessage("A quantidade precisa ser maior do que 0");
+                //.GreaterThan(-1).WithMessage("A quantidade não pode ser negativa");
 
             RuleFor(x => x.Funcionario.Nome)
                 .NotNull().WithMessage("O campo nome não pode ficar vazio")
